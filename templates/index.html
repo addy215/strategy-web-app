@@ -25,19 +25,21 @@
             推送到微信
         </label>
 
-        <!-- 下拉选择微信接收人 -->
+        <!-- 微信接收人下拉选择 -->
         <label>选择微信接收人：</label>
         <select name="wechat_key">
             <option value="">--请选择--</option>
-            <option value="SCT11111AAAAA" {% if wechat_key == 'SCT11111AAAAA' %}selected{% endif %}>🟢 张先生</option>
-            <option value="SCT22222BBBBB" {% if wechat_key == 'SCT22222BBBBB' %}selected{% endif %}>🔵 李小姐</option>
-            <option value="SCT33333CCCCC" {% if wechat_key == 'SCT33333CCCCC' %}selected{% endif %}>🟡 默认通道</option>
+            <option value="SCT276105TSPaSE9FuAyRT5rtjrGV9v7Zm" {% if wechat_key == 'SCT276105TSPaSE9FuAyRT5rtjrGV9v7Zm' %}selected{% endif %}>🟢 小韵子</option>
+            <option value="SCT待补充" {% if wechat_key == 'SCT待补充' %}selected{% endif %}>🔵 小文子</option>
+            <option value="SCT276105TSPaSE9FuAyRT5rtjrGV9v7Zm" {% if wechat_key == 'SCT276105TSPaSE9FuAyRT5rtjrGV9v7Zm' and not wechat_key %}selected{% endif %}>🟡 默认通道</option>
         </select>
 
         <label>
             <input type="checkbox" name="send_email" {% if send_email %}checked{% endif %}>
             邮件发送到邮箱
         </label>
+
+        <input type="email" name="email_address" value="{{ email_address or '' }}" placeholder="输入邮箱地址">
 
         <button type="submit" class="btn">开始分析</button>
     </form>

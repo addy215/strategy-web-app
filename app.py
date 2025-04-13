@@ -13,12 +13,14 @@ def index():
     send_wechat = False
     send_email_flag = False
     wechat_key = ""
+    email_address = ""
 
     if request.method == 'POST':
         symbol = request.form.get('symbol', '').upper()
         send_wechat = 'send_wechat' in request.form
         send_email_flag = 'send_email' in request.form
         wechat_key = request.form.get('wechat_key', '')
+        email_address = request.form.get('email_address', '')
 
         result = run_analysis(symbol)
         chart_data = generate_chart_data(symbol)
@@ -26,8 +28,8 @@ def index():
         if send_wechat and wechat_key:
             send_wechat_message(f"小张每日研究 - {symbol}", result, key=wechat_key)
 
-        if send_email_flag:
-            send_email(f"小张每日研究 - {symbol}", result)
+        if send_email_flag and email_address:
+            send_email(f"小张每日研究 - {symbol}", result, to=email_address)
 
     return render_template('index.html',
                            result=result,
@@ -35,6 +37,7 @@ def index():
                            send_wechat=send_wechat,
                            send_email=send_email_flag,
                            wechat_key=wechat_key,
+                           email_address=email_address,
                            chart_data=chart_data)
 
 if __name__ == '__main__':

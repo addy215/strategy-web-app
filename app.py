@@ -45,11 +45,11 @@ def index():
     )
 
 if __name__ == '__main__':
-    # ✅ 启动定时任务（每天 9:00 推送 SOL）
     from scheduler import schedule_push_task
     schedule_push_task()
 
     import os
-port = int(os.environ.get("PORT", 5000))
-app.run(host="0.0.0.0", port=port)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
+
 

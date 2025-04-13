@@ -1,48 +1,36 @@
-from flask import Flask, request, render_template_string
+# app.py
+from flask import Flask, request, render_template
 from strategy_core import run_analysis
 from wechat_notify import send_wechat_message
 
 app = Flask(__name__)
 
-HTML_TEMPLATE = """
-<!doctype html>
-<title>小张每日研究</title>
-<h2>输入币种（如 BTC 或 SOL）</h2>
-<form method="post">
-  <input name="symbol" value="{{ symbol }}" autofocus required>
-  <label>
-    <input type="checkbox" name="send_wechat" {% if send_wechat %}checked{% endif %}>
-    推送结果到微信
-  </label>
-  <br><br>
-  <input type="submit" value="分析">
-</form>
-{% if result %}
-<hr>
-<pre>{{ result }}</pre>
-{% endif %}
-"""
+# 主币种名单（只推送主币）
+MAIN_COINS = ['BTC']
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    symbol = ''
-    result = ''
+    result_map = {}
+    selected = []
     send_wechat = False
 
     if request.method == 'POST':
-        symbol = request.form['symbol'].upper()
-        result = run_analysis(symbol)
+        selected = request.form.getlist('symbols')
         send_wechat = 'send_wechat' in request.form
 
-        if send_wechat:
-            send_wechat_message(f"小张每日研究 - {symbol}", result)
+        for symbol in selected:
+            symbol = symbol.upper()
+            result = run_analysis(symbol)
+            result_map[symbol] = result
 
-    return render_template_string(
-        HTML_TEMPLATE,
-        symbol=symbol,
-        result=result,
-        send_wechat=send_wechat
-    )
+            if symbol in MAIN_COINS and send_wechat:
+                send_wechat_message(f"小张每日研究 - {symbol}", result)
+
+    return render_template('index.html',
+                           symbols=['BTC', 'ETH', 'SOL', 'WLD'],
+                           selected=selected,
+                           send_wechat=send_wechat,
+                           result_map=result_map)
 
 if __name__ == '__main__':
     from scheduler import schedule_push_task
@@ -51,5 +39,3 @@ if __name__ == '__main__':
     import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
-

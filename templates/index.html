@@ -1,62 +1,45 @@
-<!-- strategy_web_app/templates/index.html -->
-<!DOCTYPE html>
-<html lang="zh">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>加密货币策略分析</title>
+    <meta charset="utf-8">
+    <title>小张每日研究</title>
     <style>
-        body {
-            font-family: sans-serif;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }
-        .container {
-            max-width: 700px;
-            margin: auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        input[type="text"] {
-            padding: 10px;
-            width: 80%;
-            font-size: 1em;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        button {
-            padding: 10px 15px;
-            font-size: 1em;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-left: 10px;
-        }
-        pre {
-            background: #f0f0f0;
-            padding: 10px;
-            white-space: pre-wrap;
-            border-radius: 5px;
-        }
-        h1 { text-align: center; }
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; background-color: #f8f8f8; }
+        h2 { color: #333; }
+        .coin-box { margin-bottom: 10px; }
+        pre { background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; }
+        label { margin-right: 15px; }
+        .btn { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>加密货币策略分析</h1>
-        <form method="post">
-            <input type="text" name="symbol" placeholder="输入币种（如 BTC）" required value="{{ symbol }}">
-            <button type="submit">分析</button>
-        </form>
+    <h2>选择要分析的币种</h2>
+    <form method="post">
+        <div class="coin-box">
+            {% for coin in symbols %}
+                <label>
+                    <input type="checkbox" name="symbols" value="{{ coin }}" {% if coin in selected %}checked{% endif %}>
+                    {{ coin }}
+                </label>
+            {% endfor %}
+        </div>
 
-        {% if result %}
+        <label>
+            <input type="checkbox" name="send_wechat" {% if send_wechat %}checked{% endif %}>
+            推送主币（如 BTC）到微信
+        </label>
+        <br><br>
+
+        <button type="submit" class="btn">开始分析</button>
+    </form>
+
+    {% if result_map %}
         <hr>
-        <h3>分析结果：</h3>
-        <pre>{{ result }}</pre>
-        {% endif %}
-    </div>
+        {% for coin, result in result_map.items() %}
+            <h3>💰 分析结果：{{ coin }}</h3>
+            <pre>{{ result }}</pre>
+        {% endfor %}
+    {% endif %}
 </body>
 </html>

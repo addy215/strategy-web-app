@@ -3,28 +3,98 @@
 <head>
     <meta charset="utf-8">
     <title>小张每日研究</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; background-color: #f8f8f8; }
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: auto; background-color: #f8f8f8; }
         pre { background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; }
         label { margin-right: 15px; }
         .btn { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
         .btn:hover { background: #0056b3; }
+        canvas { margin-bottom: 40px; background: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+        h3 { margin-top: 40px; }
     </style>
 </head>
 <body>
     <h2>输入币种（如 BTC 或 SOL）</h2>
     <form method="post">
         <input type="text" name="symbol" value="{{ symbol or '' }}" required>
+
         <label>
             <input type="checkbox" name="send_wechat" {% if send_wechat %}checked{% endif %}>
             推送到微信
         </label>
+
+        <!-- 下拉选择微信接收人 -->
+        <label>选择微信接收人：</label>
+        <select name="wechat_key">
+            <option value="">--请选择--</option>
+            <option value="SCT11111AAAAA" {% if wechat_key == 'SCT11111AAAAA' %}selected{% endif %}>🟢 张先生</option>
+            <option value="SCT22222BBBBB" {% if wechat_key == 'SCT22222BBBBB' %}selected{% endif %}>🔵 李小姐</option>
+            <option value="SCT33333CCCCC" {% if wechat_key == 'SCT33333CCCCC' %}selected{% endif %}>🟡 默认通道</option>
+        </select>
+
+        <label>
+            <input type="checkbox" name="send_email" {% if send_email %}checked{% endif %}>
+            邮件发送到邮箱
+        </label>
+
         <button type="submit" class="btn">开始分析</button>
     </form>
 
     {% if result %}
         <hr>
         <pre>{{ result }}</pre>
+    {% endif %}
+
+    {% if chart_data %}
+        <h3>📊 合约策略速览图表（近30根K线 + 推荐点位）</h3>
+        {% for tf, chart in chart_data.items() %}
+            <h4>{{ tf }} 周期</h4>
+            <canvas id="chart_{{ tf }}" width="900" height="300"></canvas>
+            <script>
+                const ctx_{{ tf }} = document.getElementById("chart_{{ tf }}").getContext("2d");
+                const chart_{{ tf }} = new Chart(ctx_{{ tf }}, {
+                    type: "candlestick",
+                    data: {
+                        datasets: [{
+                            label: "{{ tf }}",
+                            data: {{ chart.kline|safe }},
+                            borderColor: "black",
+                            color: { up: "green", down: "red", unchanged: "gray" }
+                        },
+                        {
+                            type: 'scatter',
+                            label: '推荐入场点',
+                            data: [ { x: {{ chart.entry_time }}, y: {{ chart.entry_price }} } ],
+                            backgroundColor: "green",
+                            pointStyle: 'circle',
+                            pointRadius: 5
+                        },
+                        {
+                            type: 'line',
+                            label: '止盈线',
+                            data: [ { x: {{ chart.entry_time }}, y: {{ chart.tp_price }} },
+                                    { x: {{ chart.last_time }}, y: {{ chart.tp_price }} } ],
+                            borderColor: "blue",
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' }
+                        },
+                        scales: {
+                            x: { type: 'time', time: { unit: 'minute' }, title: { display: true, text: '时间' } },
+                            y: { title: { display: true, text: '价格' } }
+                        }
+                    }
+                });
+            </script>
+        {% endfor %}
     {% endif %}
 </body>
 </html>

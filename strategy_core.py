@@ -1,5 +1,6 @@
 from strategy_logic import generate_all_strategies, smart_contract_signal
 from fetch_data import get_symbol_data
+import time
 
 FIVE_STYLE_TIMEFRAMES = ['1m', '5m', '1h', '4h', '1d']
 ALL_CONTRACT_CYCLES = ['1m', '5m', '15m', '1h', '4h', '1d']
@@ -7,6 +8,7 @@ ALL_CONTRACT_CYCLES = ['1m', '5m', '15m', '1h', '4h', '1d']
 def run_analysis(symbol):
     output = [f"、💸小张每日研究：{symbol}", "=" * 35]
 
+    # --- 风格策略（使用日线数据）
     tf = '1d'
     df = get_symbol_data(symbol, tf)
     if df is None or df.empty:
@@ -50,6 +52,7 @@ def run_analysis(symbol):
             output.append(f"风险回报: {strat['风险回报']} 🆗")
             output.append("------------------------------------")
 
+    # --- 合约策略速览 ---
     output.append("\n📌 合约策略速览（多空点位）")
     output.append("=" * 35)
 
@@ -67,3 +70,42 @@ def run_analysis(symbol):
         output.append("------------------------------------")
 
     return "\n".join(output)
+
+
+# 🔄 图表数据生成（近30根K线 + 推荐点位）
+def generate_chart_data(symbol):
+    timeframes = ['1m', '5m', '15m', '1h', '4h', '1d']
+    data = {}
+
+    for tf in timeframes:
+        df = get_symbol_data(symbol, tf)
+        if df is None or len(df) < 30:
+            continue
+
+        df = df[-30:].copy()
+        df['timestamp'] = df['timestamp'] // 1000  # 转换为秒
+
+        direction, entry, tp, sl, _ = smart_contract_signal(df, tf)
+
+        kline_data = []
+        for i in range(len(df)):
+            kline_data.append({
+                "x": df['timestamp'].iloc[i] * 1000,
+                "o": df['open'].iloc[i],
+                "h": df['high'].iloc[i],
+                "l": df['low'].iloc[i],
+                "c": df['close'].iloc[i]
+            })
+
+        entry_time = df['timestamp'].iloc[-2] * 1000
+        last_time = df['timestamp'].iloc[-1] * 1000
+
+        data[tf] = {
+            "kline": kline_data,
+            "entry_price": round(entry, 3),
+            "tp_price": round(tp, 3),
+            "entry_time": entry_time,
+            "last_time": last_time
+        }
+
+    return data

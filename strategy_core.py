@@ -7,8 +7,7 @@ ALL_CONTRACT_CYCLES = ['1m', '5m', '15m', '1h', '4h', '1d']
 def run_analysis(symbol):
     output = [f"、💸小张每日研究：{symbol}", "=" * 35]
 
-    # --- 五种风格分析 ---
-    tf = '1d'  # 用日线生成统一风格策略
+    tf = '1d'
     df = get_symbol_data(symbol, tf)
     if df is None or df.empty:
         output.append(f"🕒 周期: {tf} 数据获取失败 ❌\n")
@@ -51,7 +50,6 @@ def run_analysis(symbol):
             output.append(f"风险回报: {strat['风险回报']} 🆗")
             output.append("------------------------------------")
 
-    # --- 合约策略速览 ---
     output.append("\n📌 合约策略速览（多空点位）")
     output.append("=" * 35)
 

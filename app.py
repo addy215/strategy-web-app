@@ -1,36 +1,26 @@
-# app.py
 from flask import Flask, request, render_template
 from strategy_core import run_analysis
 from wechat_notify import send_wechat_message
 
 app = Flask(__name__)
 
-# 主币种名单（只推送主币）
-MAIN_COINS = ['BTC']
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    result_map = {}
-    selected = []
+    result = None
+    symbol = ""
     send_wechat = False
 
     if request.method == 'POST':
-        selected = request.form.getlist('symbols')
+        symbol = request.form.get('symbol', '').upper()
         send_wechat = 'send_wechat' in request.form
-
-        for symbol in selected:
-            symbol = symbol.upper()
-            result = run_analysis(symbol)
-            result_map[symbol] = result
-
-            if symbol in MAIN_COINS and send_wechat:
-                send_wechat_message(f"小张每日研究 - {symbol}", result)
+        result = run_analysis(symbol)
+        if send_wechat:
+            send_wechat_message(f"小张每日研究 - {symbol}", result)
 
     return render_template('index.html',
-                           symbols=['BTC', 'ETH', 'SOL', 'WLD'],
-                           selected=selected,
-                           send_wechat=send_wechat,
-                           result_map=result_map)
+                           result=result,
+                           symbol=symbol,
+                           send_wechat=send_wechat)
 
 if __name__ == '__main__':
     from scheduler import schedule_push_task

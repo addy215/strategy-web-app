@@ -5,8 +5,6 @@
     <title>小张每日研究</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: auto; background-color: #f8f8f8; }
-        h2 { color: #333; }
-        .coin-box { margin-bottom: 10px; }
         pre { background: #fff; padding: 15px; border: 1px solid #ddd; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; }
         label { margin-right: 15px; }
         .btn { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
@@ -14,32 +12,19 @@
     </style>
 </head>
 <body>
-    <h2>选择要分析的币种</h2>
+    <h2>输入币种（如 BTC 或 SOL）</h2>
     <form method="post">
-        <div class="coin-box">
-            {% for coin in symbols %}
-                <label>
-                    <input type="checkbox" name="symbols" value="{{ coin }}" {% if coin in selected %}checked{% endif %}>
-                    {{ coin }}
-                </label>
-            {% endfor %}
-        </div>
-
+        <input type="text" name="symbol" value="{{ symbol or '' }}" required>
         <label>
             <input type="checkbox" name="send_wechat" {% if send_wechat %}checked{% endif %}>
-            推送主币（如 BTC）到微信
+            推送到微信
         </label>
-        <br><br>
-
         <button type="submit" class="btn">开始分析</button>
     </form>
 
-    {% if result_map %}
+    {% if result %}
         <hr>
-        {% for coin, result in result_map.items() %}
-            <h3>💰 分析结果：{{ coin }}</h3>
-            <pre>{{ result }}</pre>
-        {% endfor %}
+        <pre>{{ result }}</pre>
     {% endif %}
 </body>
 </html>

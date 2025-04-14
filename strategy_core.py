@@ -1,7 +1,9 @@
-from strategy_logic import generate_all_strategies, smart_contract_signal
-from fetch_data import get_symbol_data
-from plot_kline_with_signals import plot_kline_with_signals
 import os
+from fetch_data import get_symbol_data
+from strategy_logic import generate_all_strategies, smart_contract_signal
+from plot_kline_with_signals import plot_kline_with_signals
+from simulation_utils import simulate_position
+from config import DEFAULT_RECEIVER
 
 FIVE_STYLE_TIMEFRAMES = ['1d']
 ALL_CONTRACT_CYCLES = ['1m', '5m', '15m', '1h', '4h', '1d']
@@ -10,11 +12,11 @@ os.makedirs(IMG_DIR, exist_ok=True)
 
 def run_analysis(symbol):
     output = [f"📌 小张每日研究：{symbol}\n"]
+    charts = {}
 
-    # 策略建议部分（五种风格）
+    # 策略建议
     output.append("🔄 策略根据大数据与AI分析建议")
     output.append("-" * 36)
-
     df_daily = get_symbol_data(symbol, '1d')
     if df_daily is not None and not df_daily.empty:
         strategies = generate_all_strategies(symbol, df_daily)
@@ -31,11 +33,10 @@ def run_analysis(symbol):
         output.append("【1d】获取日线数据失败 ❌")
         output.append("-" * 36)
 
-    # 合约策略部分
+    # 合约多空 + 仓位建议
     output.append("\n📌 合约策略速览（多空点位）")
     output.append("=" * 35)
 
-    charts = {}
     for tf in ALL_CONTRACT_CYCLES:
         df = get_symbol_data(symbol, tf)
         if df is None or df.empty:
@@ -50,17 +51,26 @@ def run_analysis(symbol):
         output.append(f"理由：{reason}")
         output.append(f"入场 {entry}，止盈 {tp}，止损 {sl}")
 
-        # 生成图表
+        # 图表
         try:
             chart_path = plot_kline_with_signals(symbol, df.tail(30), tf, entry, tp, sl)
             if chart_path:
-                output.append(f"<img src='/{chart_path}' alt='{tf} 图表' style='width:100%; max-width:600px;'>")
+                output.append(f"<img src='/{chart_path}' style='width:100%; max-width:600px;'>")
                 charts[tf] = chart_path
             else:
                 output.append(f"【{tf}】图表生成失败 ❌")
         except Exception as e:
             output.append(f"【{tf}】图表生成出错：{e}")
 
+        # 模拟仓位与AI建议
+        sim_text = simulate_position(
+            capital=1000,
+            direction=direction,
+            entry_price=entry,
+            stop_price=sl,
+            percent=0.2
+        )
+        output.append(sim_text)
         output.append("-" * 36)
 
     return "\n".join(output), charts

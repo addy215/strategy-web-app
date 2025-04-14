@@ -6,10 +6,10 @@
     <style>
         body {
             font-family: "Microsoft YaHei", sans-serif;
-            max-width: 800px;
+            background-color: #f7f7f7;
+            max-width: 900px;
             margin: auto;
             padding: 20px;
-            background-color: #f7f7f7;
         }
         h1 {
             text-align: center;
@@ -17,15 +17,16 @@
         }
         form {
             margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
         }
-        select, input[type="text"] {
-            padding: 8px;
+        input, select {
+            padding: 6px 10px;
             font-size: 14px;
-            margin-right: 10px;
         }
         input[type="submit"] {
-            padding: 8px 16px;
-            font-size: 14px;
             background-color: #007bff;
             color: white;
             border: none;
@@ -42,7 +43,7 @@
         }
         img {
             max-width: 100%;
-            margin-bottom: 20px;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -51,7 +52,7 @@
     <form method="post">
         <label>币种：</label>
         <input type="text" name="symbol" placeholder="如 BTC" required>
-        <label>选择推送通道：</label>
+        <label>推送通道：</label>
         <select name="receiver">
             {% for name in wechat_keys %}
                 <option value="{{ name }}" {% if name == default_receiver %}selected{% endif %}>{{ name }}</option>

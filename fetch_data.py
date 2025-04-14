@@ -1,35 +1,41 @@
-# strategy_web_app/fetch_data.py
-
-import ccxt
+import requests
 import pandas as pd
 
-# 初始化现货市场
-exchange = ccxt.binance({
-    'enableRateLimit': True,
-    'options': {
-        'defaultType': 'spot'
-    }
-})
+BINANCE_BASE_URL = "https://fapi.binance.com"
+TIMEFRAMES = ["1m", "5m", "15m", "1h", "4h", "1d"]
 
-def get_symbol_data(symbol, timeframe='1h', limit=150):
-    symbol = symbol.upper().strip()
-    pair = f"{symbol}/USDT"
-
+def fetch_all_symbols():
+    url = f"{BINANCE_BASE_URL}/fapi/v1/exchangeInfo"
     try:
-        markets = exchange.load_markets()
-
-        if pair not in markets:
-            print(f"[❌] Binance 不支持该交易对: {pair}")
-            suggestions = [s for s in markets if symbol in s and '/USDT' in s]
-            if suggestions:
-                print(f"✅ 可选交易对: {suggestions[:5]}")
-            return None
-
-        ohlcv = exchange.fetch_ohlcv(pair, timeframe=timeframe, limit=limit)
-        df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-        df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
-        return df
-
+        response = requests.get(url)
+        data = response.json()
+        symbols = [
+            item["symbol"] for item in data["symbols"]
+            if item["contractType"] == "PERPETUAL" and item["symbol"].endswith("USDT")
+        ]
+        return symbols
     except Exception as e:
-        print(f"[ERROR] 获取 {pair} 的数据失败：{e}")
+        print(f"获取合约币种失败: {e}")
+        return []
+
+def get_symbol_data(symbol, interval, limit=150):
+    url = f"{BINANCE_BASE_URL}/fapi/v1/klines"
+    params = {"symbol": symbol.upper(), "interval": interval, "limit": limit}
+    try:
+        response = requests.get(url, params=params)
+        data = response.json()
+        df = pd.DataFrame(data, columns=[
+            "open_time", "open", "high", "low", "close", "volume",
+            "close_time", "quote_asset_volume", "number_of_trades",
+            "taker_buy_base_asset_volume", "taker_buy_quote_asset_volume", "ignore"
+        ])
+
+        # 强制类型转换以防止部分字段为字符串
+        df["timestamp"] = pd.to_numeric(df["open_time"], errors="coerce")
+        df["close"] = pd.to_numeric(df["close"], errors="coerce")
+        df.dropna(subset=["timestamp", "close"], inplace=True)  # 删除无效数据行
+        return df
+    except Exception as e:
+        print(f"获取K线失败：{symbol} - {interval} - {e}")
         return None
+

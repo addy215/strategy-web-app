@@ -1,6 +1,0 @@
-flask
-ccxt
-pandas
-jinja2
-requests
-apscheduler

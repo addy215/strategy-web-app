@@ -1,22 +1,29 @@
 import requests
+from config import WECHAT_KEYS
 
-# ✅ 这是默认备用的 key（可选）
-DEFAULT_WECHAT_KEY = "SCT00000DEFAULTKEY"
+def send_wechat(content, receiver):
+    """
+    使用 Server 酱进行微信推送。
+    参数：
+        content: 推送的消息内容（字符串）
+        receiver: 接收人名称，对应 config.py 中的 WECHAT_KEYS 键名
+    """
+    sckey = WECHAT_KEYS.get(receiver)
+    if not sckey:
+        print(f"❌ 未找到微信接收人「{receiver}」的 Server酱 key")
+        return
 
-def send_wechat_message(title, content, key=None):
-    """
-    发送微信消息：
-    - key: Server酱的 key（网页传入）
-    - 若未提供 key，将使用默认值
-    """
-    use_key = key or DEFAULT_WECHAT_KEY
-    url = f"https://sctapi.ftqq.com/{use_key}.send"
+    url = f"https://sctapi.ftqq.com/{sckey}.send"
+    data = {
+        "title": "📊 小张每日研究",
+        "desp": content
+    }
 
     try:
-        resp = requests.post(url, data={"title": title, "desp": content})
-        if resp.status_code == 200:
-            print(f"✅ 微信推送成功（Key: {use_key}）")
+        response = requests.post(url, data=data)
+        if response.status_code == 200:
+            print("✅ 微信通知发送成功")
         else:
-            print(f"❌ 推送失败：{resp.status_code}, {resp.text}")
+            print(f"❌ 微信通知发送失败，状态码：{response.status_code}")
     except Exception as e:
-        print(f"❌ 推送异常：{e}")
+        print(f"❌ 微信发送异常: {e}")

@@ -3,25 +3,23 @@ from email.mime.text import MIMEText
 from email.header import Header
 
 SMTP_SERVER = "smtp.qq.com"
-SMTP_PORT = 465
-SMTP_USER = "你的邮箱@qq.com"
-SMTP_PASS = "你的授权码"
+SMTP_PORT = 587
+EMAIL_ADDRESS = "461548470@qq.com"
+SMTP_AUTH_CODE = "bpboyynhcsanbjci"
 
-# 默认备用接收人（可选）
-TO_LIST = ["备用@example.com"]
-
-def send_email(subject, content, to=None):
+def send_email(to_address, symbol, content):
     try:
-        receivers = [to] if to else TO_LIST
         msg = MIMEText(content, "plain", "utf-8")
-        msg["From"] = Header(SMTP_USER)
-        msg["To"] = Header(",".join(receivers))
+        subject = f"小张每日研究：{symbol} 分析报告"
         msg["Subject"] = Header(subject, "utf-8")
+        msg["From"] = EMAIL_ADDRESS
+        msg["To"] = to_address
 
-        server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
-        server.login(SMTP_USER, SMTP_PASS)
-        server.sendmail(SMTP_USER, receivers, msg.as_string())
-        server.quit()
-        print("📬 邮件发送成功")
+        smtp = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        smtp.starttls()
+        smtp.login(EMAIL_ADDRESS, SMTP_AUTH_CODE)
+        smtp.sendmail(EMAIL_ADDRESS, to_address, msg.as_string())
+        smtp.quit()
+        print(f"✅ 邮件已发送至 {to_address}")
     except Exception as e:
-        print("❌ 邮件发送失败：", e)
+        print(f"❌ 邮件发送失败: {e}")

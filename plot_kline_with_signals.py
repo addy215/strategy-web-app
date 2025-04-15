@@ -21,25 +21,21 @@ os.makedirs(IMG_DIR, exist_ok=True)
 def plot_kline_with_signals(symbol, df, tf, entry, tp, sl):
     df = df.copy()
 
-    # 确保存在 timestamp 列
     if "timestamp" not in df.columns:
         if "open_time" in df.columns:
             df["timestamp"] = pd.to_datetime(df["open_time"], unit="ms")
         else:
             df["timestamp"] = pd.to_datetime(df.index)
 
-    # 保证 timestamp 是 datetime 类型
     if not pd.api.types.is_datetime64_any_dtype(df["timestamp"]):
         df["timestamp"] = pd.to_datetime(df["timestamp"])
 
-    # 如果 timestamp 是整数（即毫秒），需转换为 datetime
     if pd.api.types.is_integer_dtype(df["timestamp"]):
         df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
 
-    # 设置索引并转换时区
     df.set_index("timestamp", inplace=True)
+    df.index = df.index.tz_localize("UTC").tz_convert("Asia/Tokyo")
 
-    # 绘制图表
     plt.figure(figsize=(7, 3))
     plt.plot(df.index, df["close"], label="价格", linewidth=1.5)
     if entry: plt.axhline(entry, color="blue", linestyle="--", label=f"入场: {entry}")

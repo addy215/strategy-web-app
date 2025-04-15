@@ -6,34 +6,29 @@
     <style>
         body {
             font-family: "Microsoft YaHei", sans-serif;
-            background-color: #f7f7f7;
-            max-width: 900px;
+            max-width: 800px;
             margin: auto;
             padding: 20px;
+            background-color: #f7f7f7;
         }
         h1 {
             text-align: center;
-            color: #333;
         }
         form {
             margin-bottom: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
         }
-        input, select {
-            padding: 6px 10px;
+        select, input[type="text"] {
+            padding: 8px;
             font-size: 14px;
+            margin-right: 10px;
         }
         input[type="submit"] {
+            padding: 8px 16px;
+            font-size: 14px;
             background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background-color: #0056b3;
         }
         pre {
             background-color: #eee;
@@ -43,7 +38,7 @@
         }
         img {
             max-width: 100%;
-            margin-top: 10px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -52,18 +47,12 @@
     <form method="post">
         <label>币种：</label>
         <input type="text" name="symbol" placeholder="如 BTC" required>
-        <label>推送通道：</label>
-        <select name="receiver">
-            {% for name in wechat_keys %}
-                <option value="{{ name }}" {% if name == default_receiver %}selected{% endif %}>{{ name }}</option>
-            {% endfor %}
-        </select>
         <input type="submit" value="开始分析">
     </form>
 
     {% if result %}
         <h2>📌 分析结果</h2>
-        <pre>{{ result|safe }}</pre>
+        <pre>{{ result | safe }}</pre>
     {% endif %}
 </body>
 </html>

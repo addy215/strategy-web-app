@@ -1,5 +1,7 @@
-flask 
-requests 
-pandas 
-matplotlib 
-schedule 
+flask
+requests
+matplotlib
+pandas
+pandas-ta
+
+

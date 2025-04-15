@@ -14,7 +14,7 @@ def run_analysis(symbol):
     output = [f"📌 小张每日研究：{symbol}\n"]
     charts = {}
 
-    # 策略建议
+    # 策略建议模块
     output.append("🔄 策略根据大数据与AI分析建议")
     output.append("-" * 36)
     df_daily = get_symbol_data(symbol, '1d')
@@ -33,7 +33,7 @@ def run_analysis(symbol):
         output.append("【1d】获取日线数据失败 ❌")
         output.append("-" * 36)
 
-    # 合约多空 + 仓位建议
+    # 合约策略模块
     output.append("\n📌 合约策略速览（多空点位）")
     output.append("=" * 35)
 
@@ -51,7 +51,6 @@ def run_analysis(symbol):
         output.append(f"理由：{reason}")
         output.append(f"入场 {entry}，止盈 {tp}，止损 {sl}")
 
-        # 图表
         try:
             chart_path = plot_kline_with_signals(symbol, df.tail(30), tf, entry, tp, sl)
             if chart_path:
@@ -62,12 +61,11 @@ def run_analysis(symbol):
         except Exception as e:
             output.append(f"【{tf}】图表生成出错：{e}")
 
-        # 模拟仓位与AI建议
         sim_text = simulate_position(
             capital=1000,
             direction=direction,
             entry_price=entry,
-            stop_price=sl,
+            stop_loss=sl,
             percent=0.2
         )
         output.append(sim_text)
